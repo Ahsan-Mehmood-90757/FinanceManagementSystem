@@ -13,7 +13,19 @@ frontend/   React 19 + TypeScript + Tailwind CSS 4 + TanStack Query (ReactBits c
 user `postgres` / password `postgres`), creates the database, builds, runs the tests and starts the app. Afterwards, use
 `RUN.cmd` to start it again.
 
-**Manual route:**
+## Quick start (macOS)
+
+Needs [Homebrew](https://brew.sh). In Terminal, from the project folder:
+
+```bash
+./setup.sh   # installs .NET 10 SDK, Node.js and PostgreSQL 17 if missing, creates fms_dev, builds, tests, npm install
+./run.sh     # starts the API and the web app and opens the browser (Ctrl+C stops both)
+```
+
+Run `setup.sh` once, then `run.sh` each time. If your PostgreSQL `postgres` user has a different password, `setup.sh` asks
+for it and saves the connection string to `.env` (git-ignored), so `appsettings.Development.json` stays the same on every machine.
+
+## Manual setup (any OS)
 
 Prerequisites: [.NET 10 SDK](https://dotnet.microsoft.com/download), Node.js 20+, and PostgreSQL 15+ (Docker Desktop or a local install).
 
