@@ -7,19 +7,21 @@ import {
   type InputHTMLAttributes,
   type ReactNode,
   type SelectHTMLAttributes,
+  type TableHTMLAttributes,
   type TextareaHTMLAttributes,
 } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ChevronLeft, ChevronRight, Loader2, Search, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2, Moon, Search, Sun, X } from "lucide-react";
 import { cx, money } from "../lib/format";
+import { useTheme } from "../lib/theme";
 import type { DocumentStatus } from "../lib/types";
 
 // ------------------------------------------------------------------ Button
 type Variant = "primary" | "secondary" | "ghost" | "danger";
 const variants: Record<Variant, string> = {
-  primary: "bg-accent text-white hover:bg-accent-strong border border-accent-strong/40",
-  secondary: "bg-surface text-ink border border-rule hover:border-rule-strong hover:bg-slate-50",
-  ghost: "text-muted hover:text-ink hover:bg-slate-100 border border-transparent",
+  primary: "bg-accent text-on-accent hover:bg-accent-strong border border-accent-strong/40",
+  secondary: "bg-surface text-ink border border-rule hover:border-rule-strong hover:bg-wash",
+  ghost: "text-muted hover:text-ink hover:bg-wash-strong border border-transparent",
   danger: "bg-surface text-owe border border-owe/30 hover:bg-owe-soft",
 };
 
@@ -71,7 +73,7 @@ export function Field({
 }) {
   return (
     <label className={cx("flex flex-col gap-1", className)}>
-      <span className="text-[12px] font-medium text-slate-600">{label}</span>
+      <span className="text-[12px] font-medium text-ink-soft">{label}</span>
       {children}
       {error ? <span className="text-[12px] text-owe">{error}</span> : hint ? <span className="text-[12px] text-muted">{hint}</span> : null}
     </label>
@@ -124,7 +126,7 @@ export function Checkbox({ label, checked, onChange }: { label: string; checked:
         type="checkbox"
         checked={checked}
         onChange={(e) => onChange(e.target.checked)}
-        className="size-3.5 rounded border-rule-strong accent-[#0f766e]"
+        className="size-3.5 rounded border-rule-strong accent-accent"
       />
       {label}
     </label>
@@ -133,14 +135,25 @@ export function Checkbox({ label, checked, onChange }: { label: string; checked:
 
 export function SearchInput({ value, onChange, placeholder = "Search" }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
   return (
-    <div className="relative w-64">
-      <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-slate-400" />
+    <div className="relative w-full sm:w-64">
+      <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-faint" />
       <input className="input pl-8" value={value} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
     </div>
   );
 }
 
 // ------------------------------------------------------------------ Layout bits
+/** From–to date filter. Fills the row on phones, fixed width beside other filters from `sm` up. */
+export function DateRange({ from, to, onFrom, onTo }: { from: string; to: string; onFrom: (v: string) => void; onTo: (v: string) => void }) {
+  return (
+    <div className="flex w-full items-center gap-2 sm:w-auto">
+      <Input type="date" value={from} onChange={(e) => onFrom(e.target.value)} className="min-w-0 flex-1 sm:w-[150px] sm:flex-none" aria-label="From date" />
+      <span className="text-muted">to</span>
+      <Input type="date" value={to} onChange={(e) => onTo(e.target.value)} className="min-w-0 flex-1 sm:w-[150px] sm:flex-none" aria-label="To date" />
+    </div>
+  );
+}
+
 export function PageHeader({ title, description, actions }: { title: ReactNode; description?: ReactNode; actions?: ReactNode }) {
   return (
     <div className="no-print mb-5 flex flex-wrap items-end justify-between gap-3">
@@ -148,7 +161,27 @@ export function PageHeader({ title, description, actions }: { title: ReactNode; 
         <h1 className="text-[20px] font-semibold tracking-[-0.01em]">{title}</h1>
         {description && <p className="mt-0.5 text-[13px] text-muted">{description}</p>}
       </div>
-      {actions && <div className="flex items-center gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+    </div>
+  );
+}
+
+/**
+ * Dense ledger table. Read-only tables scroll sideways when they don't fit. `stack` is for entry tables: when their
+ * card gets narrow, each row becomes a two-column mini form (give each <td> a data-label, and `stack-full` to span the
+ * row); use `stack="wide"` for tables with many columns.
+ */
+export function Table({ stack, className, ...rest }: TableHTMLAttributes<HTMLTableElement> & { stack?: boolean | "wide" }) {
+  if (!stack) {
+    return (
+      <div className="overflow-x-auto">
+        <table {...rest} className={cx("table-dense w-full", className)} />
+      </div>
+    );
+  }
+  return (
+    <div className="@container">
+      <table {...rest} className={cx("table-dense table-stack w-full", stack === "wide" && "table-stack-wide", className)} />
     </div>
   );
 }
@@ -161,7 +194,7 @@ export function Card({ title, actions, children, className, bodyClassName }: {
   bodyClassName?: string;
 }) {
   return (
-    <section className={cx("rounded-xl border border-rule bg-surface", className)}>
+    <section className={cx("min-w-0 rounded-xl border border-rule bg-surface", className)}>
       {(title || actions) && (
         <header className="flex items-center justify-between gap-2 border-b border-rule px-4 py-2.5">
           <h2 className="text-[13px] font-semibold">{title}</h2>
@@ -175,7 +208,7 @@ export function Card({ title, actions, children, className, bodyClassName }: {
 
 type Tone = "neutral" | "accent" | "owe" | "warn";
 const tones: Record<Tone, string> = {
-  neutral: "bg-slate-100 text-slate-600",
+  neutral: "bg-wash-strong text-ink-soft",
   accent: "bg-accent-soft text-accent-strong",
   owe: "bg-owe-soft text-owe",
   warn: "bg-warn-soft text-warn",
@@ -252,7 +285,8 @@ export function Pagination({ page, pageSize, total, onPage }: { page: number; pa
 
 export function Tabs<T extends string>({ value, onChange, tabs }: { value: T; onChange: (v: T) => void; tabs: { value: T; label: string }[] }) {
   return (
-    <div className="inline-flex rounded-lg border border-rule bg-slate-100/70 p-0.5" role="tablist">
+    // Scrolls sideways when the tabs don't fit (e.g. Settings on a phone).
+    <div className="inline-flex max-w-full overflow-x-auto rounded-lg border border-rule bg-wash-strong/70 p-0.5 [scrollbar-width:none]" role="tablist">
       {tabs.map((t) => (
         <button
           key={t.value}
@@ -260,7 +294,7 @@ export function Tabs<T extends string>({ value, onChange, tabs }: { value: T; on
           aria-selected={value === t.value}
           onClick={() => onChange(t.value)}
           className={cx(
-            "relative rounded-md px-3 py-1 text-[12.5px] font-medium transition-colors",
+            "relative shrink-0 whitespace-nowrap rounded-md px-3 py-1 text-[12.5px] font-medium transition-colors",
             value === t.value ? "text-ink" : "text-muted hover:text-ink",
           )}
         >
@@ -301,9 +335,9 @@ export function Modal({
   return (
     <AnimatePresence>
       {open && (
-        <div className="no-print fixed inset-0 z-40 flex items-start justify-center overflow-y-auto p-4 pt-[8vh]">
+        <div className="no-print fixed inset-0 z-40 flex items-start justify-center overflow-y-auto p-3 pt-[6vh] sm:p-4 sm:pt-[8vh]">
           <motion.div
-            className="fixed inset-0 bg-slate-900/25 backdrop-blur-[2px]"
+            className="fixed inset-0 bg-slate-950/30 dark:bg-black/50 backdrop-blur-[2px]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -323,12 +357,12 @@ export function Modal({
               <h2 id={titleId} className="text-[14px] font-semibold">
                 {title}
               </h2>
-              <button onClick={onClose} className="rounded p-1 text-muted hover:bg-slate-100 hover:text-ink" aria-label="Close">
+              <button onClick={onClose} className="rounded-md p-1 text-muted hover:bg-wash-strong hover:text-ink" aria-label="Close">
                 <X className="size-4" />
               </button>
             </header>
             <div className="max-h-[70vh] overflow-y-auto p-4">{children}</div>
-            {footer && <footer className="flex justify-end gap-2 border-t border-rule bg-slate-50/60 px-4 py-3">{footer}</footer>}
+            {footer && <footer className="flex flex-wrap justify-end gap-2 border-t border-rule bg-wash/60 px-4 py-3">{footer}</footer>}
           </motion.div>
         </div>
       )}
@@ -372,7 +406,7 @@ export function VoidDialog({
         </>
       }
     >
-      <p className="mb-3 text-[13px] text-slate-600">{consequence} The document stays in the records, marked voided.</p>
+      <p className="mb-3 text-[13px] text-ink-soft">{consequence} The document stays in the records, marked voided.</p>
       <Field label="Reason">
         <Textarea autoFocus value={reason} onChange={(e) => setReason(e.target.value)} placeholder="e.g. Entered against the wrong customer" />
       </Field>
@@ -467,7 +501,7 @@ export function Combobox<T>({
         }}
       />
       {open && (
-        <ul className="absolute z-30 mt-1 max-h-64 w-full min-w-[260px] overflow-y-auto rounded-lg border border-rule bg-surface py-1 shadow-[0_8px_24px_rgba(15,23,42,0.08)]" role="listbox">
+        <ul className="absolute z-30 mt-1 max-h-64 w-full min-w-[min(260px,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-rule bg-surface py-1 shadow-[0_8px_24px_rgba(15,23,42,0.08)]" role="listbox">
           {loading && items.length === 0 && <li className="px-3 py-2 text-muted">Searching…</li>}
           {!loading && items.length === 0 && <li className="px-3 py-2 text-muted">No matches</li>}
           {items.map((t, i) => (
@@ -488,5 +522,28 @@ export function Combobox<T>({
         </ul>
       )}
     </div>
+  );
+}
+
+// ------------------------------------------------------------------ Theme
+/** Sun/moon switch. The icons swap with a small turn, in the spirit of the React Bits pieces used elsewhere. */
+export function ThemeToggle({ className }: { className?: string }) {
+  const { theme, toggle } = useTheme();
+  const dark = theme === "dark";
+  const label = dark ? "Switch to light mode" : "Switch to dark mode";
+  return (
+    <button onClick={toggle} aria-label={label} title={label} className={cx("grid size-8 place-items-center overflow-hidden rounded-md text-muted hover:bg-wash-strong hover:text-ink", className)}>
+      <AnimatePresence initial={false} mode="wait">
+        <motion.span
+          key={theme}
+          initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
+          animate={{ opacity: 1, rotate: 0, scale: 1 }}
+          exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
+          transition={{ duration: 0.18 }}
+        >
+          {dark ? <Moon className="size-4" /> : <Sun className="size-4" />}
+        </motion.span>
+      </AnimatePresence>
+    </button>
   );
 }

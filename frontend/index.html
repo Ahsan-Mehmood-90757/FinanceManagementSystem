@@ -12,6 +12,18 @@
       rel="stylesheet"
     />
     <title>Financial Management System</title>
+    <script>
+      // Apply the saved (or system) theme before first paint so dark mode never flashes white. See src/lib/theme.tsx.
+      (function () {
+        var t = null;
+        try { t = localStorage.getItem("fms-theme"); } catch (e) {}
+        if (t !== "light" && t !== "dark") t = matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        if (t === "dark") {
+          document.documentElement.classList.add("dark");
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", "#111213");
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

@@ -10,19 +10,21 @@ import {
   Badge,
   Button,
   Card,
+  DateRange,
   EmptyState,
   ErrorNote,
   Field,
   Input,
+  Modal,
   NumberInput,
   PageHeader,
   Pagination,
   SearchInput,
   Spinner,
   StatusBadge,
+  Table,
   Tabs,
   Textarea,
-  Modal,
 } from "./ui";
 import { AccountSelect, ExpenseCategorySelect } from "./pickers";
 
@@ -75,9 +77,7 @@ export function DocumentList({ kind }: { kind: Kind }) {
           ]}
         />
         <SearchInput value={search} onChange={setSearch} placeholder={`Number or ${c.party.toLowerCase()}`} />
-        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-[150px]" aria-label="From date" />
-        <span className="text-muted">to</span>
-        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-[150px]" aria-label="To date" />
+        <DateRange from={from} to={to} onFrom={setFrom} onTo={setTo} />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-rule bg-surface">
@@ -86,14 +86,14 @@ export function DocumentList({ kind }: { kind: Kind }) {
           <Spinner />
         ) : tab === "bills" ? (
           bills.data && bills.data.items.length > 0 ? (
-            <table className="table-dense w-full">
+            <Table>
               <thead>
                 <tr>
                   <th>Number</th>
                   <th>Date</th>
                   <th>{c.party}</th>
-                  <th>Reference</th>
-                  <th className="num">Lines</th>
+                  <th className="max-md:hidden">Reference</th>
+                  <th className="num max-md:hidden">Lines</th>
                   <th>Status</th>
                   <th className="num">Total</th>
                 </tr>
@@ -108,8 +108,8 @@ export function DocumentList({ kind }: { kind: Kind }) {
                     </td>
                     <td>{date(b.date)}</td>
                     <td>{b.partyName}</td>
-                    <td className="text-muted">{b.reference ?? ""}</td>
-                    <td className="num">{b.lineCount}</td>
+                    <td className="text-muted max-md:hidden">{b.reference ?? ""}</td>
+                    <td className="num max-md:hidden">{b.lineCount}</td>
                     <td>
                       <StatusBadge status={b.status} />
                     </td>
@@ -117,21 +117,21 @@ export function DocumentList({ kind }: { kind: Kind }) {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           ) : (
             <EmptyState title={`No ${c.noun} bills found`}>
               {debounced || from || to ? "Try a wider date range or a different search." : `Post your first ${c.noun} to see it here.`}
             </EmptyState>
           )
         ) : returns.data && returns.data.items.length > 0 ? (
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th>Number</th>
                 <th>Date</th>
                 <th>Against bill</th>
                 <th>{c.party}</th>
-                <th>Reason</th>
+                <th className="max-md:hidden">Reason</th>
                 <th className="num">Total</th>
               </tr>
             </thead>
@@ -150,12 +150,12 @@ export function DocumentList({ kind }: { kind: Kind }) {
                     </Link>
                   </td>
                   <td>{r.partyName}</td>
-                  <td className="max-w-[260px] truncate text-muted">{r.reason ?? ""}</td>
+                  <td className="max-w-[260px] truncate text-muted max-md:hidden">{r.reason ?? ""}</td>
                   <td className="num font-medium">{money(r.total)}</td>
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         ) : (
           <EmptyState title="No returns found">Returns are created from a posted bill.</EmptyState>
         )}
@@ -204,7 +204,7 @@ export function ChargesEditor({
           Freight, loading or equipment hire for this bill. Tracked against the bill, kept out of cost of goods, charged to net profit.
         </p>
       ) : (
-        <table className="table-dense w-full">
+        <Table stack>
           <thead>
             <tr>
               <th className="w-[200px]">Category</th>
@@ -217,13 +217,13 @@ export function ChargesEditor({
           <tbody>
             {charges.map((c) => (
               <tr key={c.key}>
-                <td>
+                <td data-label="Category">
                   <ExpenseCategorySelect value={c.expenseCategoryId} onChange={(v) => update(c.key, { expenseCategoryId: v })} />
                 </td>
-                <td>
+                <td data-label="Description">
                   <Input value={c.description} onChange={(e) => update(c.key, { description: e.target.value })} placeholder="Optional" />
                 </td>
-                <td>
+                <td data-label="Paid from">
                   <AccountSelect
                     value={c.paidFromAccountId}
                     onChange={(v) => update(c.key, { paidFromAccountId: v })}
@@ -231,18 +231,18 @@ export function ChargesEditor({
                     emptyLabel={allowOnParty ? "Added to supplier bill" : "Select account"}
                   />
                 </td>
-                <td>
+                <td data-label="Amount">
                   <NumberInput value={c.amount} onChange={(v) => update(c.key, { amount: v })} min={0} />
                 </td>
-                <td>
-                  <button className="rounded p-1 text-muted hover:bg-owe-soft hover:text-owe" aria-label="Remove charge" onClick={() => setCharges(charges.filter((x) => x.key !== c.key))}>
+                <td className="stack-full items-end">
+                  <button className="rounded-md p-1 text-muted hover:bg-owe-soft hover:text-owe" aria-label="Remove charge" onClick={() => setCharges(charges.filter((x) => x.key !== c.key))}>
                     <Trash2 className="size-3.5" />
                   </button>
                 </td>
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       )}
     </Card>
   );
@@ -337,7 +337,7 @@ export function ReturnDialog({
         </>
       }
     >
-      <div className="mb-3 grid grid-cols-[150px_1fr] gap-3">
+      <div className="mb-3 grid gap-3 sm:grid-cols-[150px_1fr]">
         <Field label="Return date">
           <Input type="date" value={dateStr} min={billDate} onChange={(e) => setDate(e.target.value)} />
         </Field>
@@ -345,7 +345,7 @@ export function ReturnDialog({
           <Input value={reason} onChange={(e) => setReason(e.target.value)} placeholder={kind === "sale" ? "e.g. Damaged in transit" : "e.g. Wrong item delivered"} />
         </Field>
       </div>
-      <table className="table-dense w-full rounded-lg border border-rule">
+      <Table stack className="rounded-lg border border-rule">
         <thead>
           <tr>
             <th>Product</th>
@@ -357,15 +357,15 @@ export function ReturnDialog({
         <tbody>
           {lines.map((l) => (
             <tr key={l.id}>
-              <td>
+              <td className="stack-full">
                 {l.productName}
                 {l.note && <div className="text-[11.5px] text-muted">{l.note}</div>}
               </td>
-              <td className="num">
+              <td className="num" data-label="Returnable">
                 {qty(l.returnable)} {l.unitSymbol}
               </td>
-              <td className="num">{money(l.rate)}</td>
-              <td>
+              <td className="num" data-label="Rate">{money(l.rate)}</td>
+              <td data-label="Return qty">
                 <NumberInput
                   value={qtys[l.id] ?? ""}
                   disabled={l.returnable <= 0}
@@ -377,8 +377,8 @@ export function ReturnDialog({
             </tr>
           ))}
         </tbody>
-      </table>
-      <div className="mt-4 grid grid-cols-2 gap-3 rounded-lg border border-dashed border-rule p-3">
+      </Table>
+      <div className="mt-4 grid gap-3 rounded-lg border border-dashed border-rule p-3 sm:grid-cols-2">
         <Field label={kind === "sale" ? "Refund cash now from" : "Receive refund now into"} hint="Leave empty to keep it as credit on the party's balance.">
           <AccountSelect value={refundAccount} onChange={setRefundAccount} allowEmpty emptyLabel="No refund now" />
         </Field>
@@ -418,7 +418,7 @@ export function ReturnDetail({ kind, id }: { kind: Kind; id: string }) {
       />
       <div className="grid gap-4 lg:grid-cols-[1fr_300px]">
         <Card bodyClassName="p-0" className="print-area">
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th>Product</th>
@@ -450,7 +450,7 @@ export function ReturnDetail({ kind, id }: { kind: Kind; id: string }) {
                 {kind === "sale" && <td className="num px-3 py-2 text-muted">{money(data.costTotal ?? 0)}</td>}
               </tr>
             </tfoot>
-          </table>
+          </Table>
         </Card>
         <div className="no-print space-y-4">
           <Card title="Details">
@@ -512,7 +512,7 @@ export function Letterhead({ title, number }: { title: string; number: string })
     <div className="mb-6 flex items-start justify-between gap-6 border-b border-rule pb-5">
       <div>
         <div className="text-[18px] font-semibold">{company?.companyName}</div>
-        <div className="mt-1 whitespace-pre-line text-[12.5px] leading-5 text-slate-600">
+        <div className="mt-1 whitespace-pre-line text-[12.5px] leading-5 text-ink-soft">
           {[company?.address, company?.phone, company?.email, company?.taxNumber && `NTN ${company.taxNumber}`].filter(Boolean).join("\n")}
         </div>
       </div>

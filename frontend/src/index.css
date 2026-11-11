@@ -1,23 +1,67 @@
 @import "tailwindcss";
 
-/* Design tokens: slate paper, ink text, hairline rules, one ledger-teal accent, rust for money we owe. */
+/* Dark mode is a class on <html>, set before first paint by the script in index.html (see lib/theme.tsx). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Design tokens: slate paper, ink text, hairline rules, one ledger-teal accent, rust for money we owe.
+   Components use only these names, so the dark palette below re-themes everything in one place. */
 @theme {
   --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
 
   --color-paper: #f8fafc;
   --color-surface: #ffffff;
+  --color-wash: #f8fafc; /* table headers, row hover, quiet panels */
+  --color-wash-strong: #f1f5f9; /* icon-button hover, chips, tab track */
   --color-ink: #0f172a;
+  --color-ink-soft: #475569; /* secondary text that still needs to read clearly */
   --color-muted: #64748b;
+  --color-faint: #94a3b8; /* placeholders, group labels, chart axes */
   --color-rule: #e2e8f0;
   --color-rule-strong: #cbd5e1;
 
   --color-accent: #0f766e;
   --color-accent-strong: #115e59;
   --color-accent-soft: #ccfbf1;
+  --color-on-accent: #ffffff;
+  --color-shine: #5eead4;
   --color-owe: #b42318;
   --color-owe-soft: #fee4e2;
   --color-warn: #b54708;
   --color-warn-soft: #fef0c7;
+
+  /* Corners: a touch softer than Tailwind's defaults (sm 4, md 6, lg 8, xl 12 px). */
+  --radius-sm: 0.3125rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+}
+
+/* Graphite night: neutral charcoal (no navy), the same ledger teal lifted for contrast. Screen only, so printing
+   always uses the light paper. */
+@media screen {
+  .dark {
+    color-scheme: dark;
+    --color-paper: #111213;
+    --color-surface: #18191b;
+    --color-wash: #1d1e21;
+    --color-wash-strong: #242629;
+    --color-ink: #e8e6e3;
+    --color-ink-soft: #c2bfba;
+    --color-muted: #8f8d89;
+    --color-faint: #64625f;
+    --color-rule: #2a2c2f;
+    --color-rule-strong: #3a3c40;
+
+    --color-accent: #3fb8a5;
+    --color-accent-strong: #6fd6c4;
+    --color-accent-soft: #16302c;
+    --color-on-accent: #071a17;
+    --color-shine: #b9f0e6;
+    --color-owe: #f0806f;
+    --color-owe-soft: #3a1d19;
+    --color-warn: #e8b04f;
+    --color-warn-soft: #34280f;
+  }
 }
 
 @layer base {
@@ -27,6 +71,11 @@
   }
   body {
     @apply bg-paper text-ink text-[13.5px] leading-5;
+  }
+  /* Only while switching themes: cross-fade colours instead of snapping. */
+  .theme-switching,
+  .theme-switching * {
+    transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease, fill 200ms ease !important;
   }
   :focus-visible {
     outline: 2px solid var(--color-accent);
@@ -44,21 +93,81 @@
 
 @layer components {
   .input {
-    @apply h-8 w-full rounded-md border border-rule bg-surface px-2.5 text-[13px] text-ink placeholder:text-slate-400
+    @apply h-8 w-full rounded-md border border-rule bg-surface px-2.5 text-[13px] text-ink placeholder:text-faint
       transition-colors hover:border-rule-strong focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/15
-      disabled:bg-slate-50 disabled:text-muted;
+      disabled:bg-wash disabled:text-muted;
   }
   .num {
     @apply text-right tabular-nums;
   }
   .table-dense th {
-    @apply sticky top-0 z-[1] border-b border-rule bg-slate-50/95 px-3 py-2 text-left text-[12px] font-medium text-muted backdrop-blur;
+    @apply sticky top-0 z-[1] border-b border-rule bg-wash/95 px-3 py-2 text-left text-[12px] font-medium text-muted backdrop-blur;
   }
   .table-dense td {
     @apply border-b border-rule/70 px-3 py-2 align-middle;
   }
   .table-dense tbody tr:hover td {
-    @apply bg-slate-50/70;
+    @apply bg-wash/70;
+  }
+}
+
+/* Narrow screens: read-only tables scroll sideways inside their card (see <Table>) and keep each row on one line. */
+@media (width < 48rem) {
+  .table-dense:not(.table-stack) :is(th, td) {
+    white-space: nowrap;
+  }
+}
+
+/* Entry tables (<Table stack>) turn each row into a small two-column form when their card is too narrow for the
+   columns, whatever the screen size (sidebar and summary panels change the space too). Cells label themselves from
+   data-label; .stack-full spans the row. `stack="wide"` tables have more columns, so they stack sooner. */
+@utility stacked-rows {
+  & thead {
+    display: none;
+  }
+  &,
+  & tbody {
+    display: block;
+  }
+  & tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.625rem 0.75rem;
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--color-rule);
+  }
+  & tbody tr:hover td {
+    background: transparent;
+  }
+  & td {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.25rem;
+    min-width: 0;
+    width: auto;
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+  & td[data-label]::before {
+    content: attr(data-label);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+  & td.stack-full {
+    grid-column: 1 / -1;
+  }
+}
+@container (width < 40rem) {
+  .table-stack {
+    @apply stacked-rows;
+  }
+}
+@container (width < 54rem) {
+  .table-stack-wide {
+    @apply stacked-rows;
   }
 }
 
@@ -68,8 +177,8 @@
     to bottom,
     transparent 0,
     transparent 27px,
-    rgb(15 118 110 / 0.07) 27px,
-    rgb(15 118 110 / 0.07) 28px
+    color-mix(in srgb, var(--color-accent) 7%, transparent) 27px,
+    color-mix(in srgb, var(--color-accent) 7%, transparent) 28px
   );
 }
 

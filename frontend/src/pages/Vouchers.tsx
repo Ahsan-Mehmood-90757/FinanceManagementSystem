@@ -9,6 +9,7 @@ import type { Paged, Party, Voucher, VoucherType } from "../lib/types";
 import {
   Badge,
   Button,
+  DateRange,
   EmptyState,
   ErrorNote,
   Field,
@@ -20,6 +21,7 @@ import {
   SearchInput,
   Spinner,
   StatusBadge,
+  Table,
   Tabs,
   Textarea,
   VoidDialog,
@@ -86,9 +88,7 @@ export default function VouchersPage() {
           ]}
         />
         <SearchInput value={search} onChange={setSearch} placeholder="Number, reference or party" />
-        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-[150px]" aria-label="From date" />
-        <span className="text-muted">to</span>
-        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-[150px]" aria-label="To date" />
+        <DateRange from={from} to={to} onFrom={setFrom} onTo={setTo} />
       </div>
 
       <div className="overflow-hidden rounded-xl border border-rule bg-surface">
@@ -96,7 +96,7 @@ export default function VouchersPage() {
         {isLoading ? (
           <Spinner />
         ) : data && data.items.length > 0 ? (
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th>Number</th>
@@ -118,7 +118,7 @@ export default function VouchersPage() {
                     <TypeBadge type={v.type} />
                   </td>
                   <td>{v.partyName ?? v.expenseCategoryName ?? (v.toAccountName ? `To ${v.toAccountName}` : "—")}</td>
-                  <td className="text-slate-600">{v.accountName}</td>
+                  <td className="text-ink-soft">{v.accountName}</td>
                   <td className="text-muted">{v.reference ?? v.linkedDocumentNumber ?? ""}</td>
                   <td>
                     <StatusBadge status={v.status} />
@@ -127,7 +127,7 @@ export default function VouchersPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         ) : (
           <EmptyState title="No vouchers yet">Receipts, payments, expenses and transfers you record will be listed here.</EmptyState>
         )}
@@ -222,7 +222,7 @@ export function VoucherForm({
         </>
       }
     >
-      <p className="mb-4 text-[13px] text-slate-600">{info.help}</p>
+      <p className="mb-4 text-[13px] text-ink-soft">{info.help}</p>
       <div className="grid grid-cols-2 gap-3">
         {needsParty && (
           <Field label={type === "Receipt" ? "Received from" : "Paid to"} className="col-span-2">

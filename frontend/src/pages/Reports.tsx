@@ -4,7 +4,7 @@ import { Printer } from "lucide-react";
 import { useApi } from "../lib/hooks";
 import { cx, date, money, monthStart, qty, today } from "../lib/format";
 import type { Balances, ProfitLoss, Valuation } from "../lib/types";
-import { Button, Card, ErrorNote, Input, PageHeader, Spinner, Tabs } from "../components/ui";
+import { Button, Card, DateRange, ErrorNote, PageHeader, Spinner, Table, Tabs } from "../components/ui";
 import { Letterhead } from "../components/documents";
 import { ExpiryCell } from "./Products";
 
@@ -48,16 +48,14 @@ function ProfitLossReport() {
 
   return (
     <>
-      <div className="no-print mb-3 flex items-center gap-2">
-        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-[150px]" aria-label="From" />
-        <span className="text-muted">to</span>
-        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-[150px]" aria-label="To" />
+      <div className="no-print mb-3 flex flex-wrap items-center gap-2">
+        <DateRange from={from} to={to} onFrom={setFrom} onTo={setTo} />
       </div>
       <ErrorNote error={error} />
       {isLoading || !data ? (
         <Spinner />
       ) : (
-        <Card className="print-area max-w-3xl" bodyClassName="p-6">
+        <Card className="print-area max-w-3xl" bodyClassName="p-4 sm:p-6">
           <div className="print-only">
             <Letterhead title="Profit & loss" number={`${date(data.from)} to ${date(data.to)}`} />
           </div>
@@ -84,7 +82,7 @@ function ProfitLossReport() {
             <Line label="Stock written off" value={-data.stockWriteOffs} />
             <Line label="Total expenses" value={-(data.operatingExpensesTotal + data.stockWriteOffs)} strong />
           </Section>
-          <div className="mt-4 flex items-baseline justify-between rounded-lg border border-rule bg-slate-50 px-4 py-3">
+          <div className="mt-4 flex items-baseline justify-between rounded-lg border border-rule bg-wash px-4 py-3">
             <div>
               <div className="font-semibold">Net profit</div>
               <div className="text-[12px] text-muted">{data.netMarginPercent}% of net sales</div>
@@ -132,7 +130,7 @@ function ValuationReport() {
       title={`Stock at FIFO cost: Rs ${money(data.totalValue)}`}
       actions={<span className="text-[12px] text-muted">{data.rows.length} products in stock</span>}
     >
-      <table className="table-dense w-full">
+      <Table>
         <thead>
           <tr>
             <th>SKU</th>
@@ -154,7 +152,7 @@ function ValuationReport() {
                   {r.name}
                 </Link>
               </td>
-              <td className="text-slate-600">{r.category ?? ""}</td>
+              <td className="text-ink-soft">{r.category ?? ""}</td>
               <td className="num">{r.batchCount}</td>
               <td>
                 <ExpiryCell date={r.earliestExpiry} />
@@ -167,7 +165,7 @@ function ValuationReport() {
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     </Card>
   );
 }
@@ -180,7 +178,7 @@ function BalancesReport() {
     rows.length === 0 ? (
       <p className="p-4 text-[13px] text-muted">Nothing outstanding.</p>
     ) : (
-      <table className="table-dense w-full">
+      <Table>
         <thead>
           <tr>
             <th>Party</th>
@@ -197,12 +195,12 @@ function BalancesReport() {
                 </Link>
                 <span className="ml-1.5 text-[11.5px] text-muted">{r.code}</span>
               </td>
-              <td className="text-slate-600">{r.phone ?? ""}</td>
+              <td className="text-ink-soft">{r.phone ?? ""}</td>
               <td className={cx("num", tone === "owe" ? "text-owe" : "text-accent-strong")}>{money(r.balance)}</td>
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     );
   return (
     <div className="print-area grid gap-4 lg:grid-cols-2">

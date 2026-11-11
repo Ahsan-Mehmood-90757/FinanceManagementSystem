@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { cx, date, documentHref, documentLabel, money } from "../lib/format";
 import type { Statement } from "../lib/types";
-import { EmptyState } from "./ui";
+import { EmptyState, Table } from "./ui";
 
 /** Ledger statement table shared by parties (debit/credit) and accounts (in/out). */
 export function StatementView({
@@ -19,7 +19,7 @@ export function StatementView({
     return <EmptyState title="No entries in this period">Change the dates to see older activity.</EmptyState>;
 
   return (
-    <table className="table-dense w-full">
+    <Table>
       <thead>
         <tr>
           <th className="w-[110px]">Date</th>
@@ -31,7 +31,7 @@ export function StatementView({
         </tr>
       </thead>
       <tbody>
-        <tr className="bg-slate-50/60">
+        <tr className="bg-wash/60">
           <td colSpan={5} className="text-muted">
             {statement.from ? `Brought forward to ${date(statement.from)}` : "Opening"}
           </td>
@@ -70,6 +70,6 @@ export function StatementView({
           <td className="num border-t border-rule px-3 py-2">{balanceFormatter(statement.closingBalance)}</td>
         </tr>
       </tfoot>
-    </table>
+    </Table>
   );
 }

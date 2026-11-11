@@ -13,8 +13,8 @@ export default function ShinyText({
   disabled = false,
   speed = 4,
   className = "",
-  baseColor = "#0f766e",
-  shineColor = "#5eead4",
+  baseColor = "var(--color-accent)",
+  shineColor = "var(--color-shine)",
 }: ShinyTextProps) {
   return (
     <span

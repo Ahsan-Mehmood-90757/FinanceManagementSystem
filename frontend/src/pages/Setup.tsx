@@ -6,7 +6,7 @@ import { useAccounts, useAction, useApi } from "../lib/hooks";
 import { useAuth } from "../lib/auth";
 import { cx, date, money, qty } from "../lib/format";
 import type { Batch, Paged, Party, Product, SetupStatus } from "../lib/types";
-import { Button, Card, ErrorNote, Field, Input, Modal, NumberInput, PageHeader, Spinner, Textarea } from "../components/ui";
+import { Button, Card, ErrorNote, Field, Input, Modal, NumberInput, PageHeader, Spinner, Table, Textarea } from "../components/ui";
 import { PartyPicker, ProductPicker } from "../components/pickers";
 import { AccountForm } from "./Accounts";
 import { PartyForm } from "./Parties";
@@ -61,7 +61,7 @@ function Step({ n, title, done, summary, children }: { n: number; title: string;
         <span
           className={cx(
             "flex size-6 items-center justify-center rounded-full text-[12px] font-semibold",
-            done ? "bg-accent text-white" : "border border-rule-strong text-muted",
+            done ? "bg-accent text-on-accent" : "border border-rule-strong text-muted",
           )}
         >
           {done ? <CheckCircle2 className="size-4" /> : n}
@@ -119,7 +119,7 @@ function AccountsStep({ editable }: { editable: boolean }) {
   return (
     <>
       {data && data.length > 0 ? (
-        <table className="table-dense w-full">
+        <Table stack>
           <thead>
             <tr>
               <th>Account</th>
@@ -133,7 +133,7 @@ function AccountsStep({ editable }: { editable: boolean }) {
               <OpeningRow key={a.id} label={a.name} sub={a.type} current={a.openingBalance} editable={editable} path={`/setup/accounts/${a.id}/opening-balance`} allowNegative={a.allowNegative} />
             ))}
           </tbody>
-        </table>
+        </Table>
       ) : (
         <p className="text-[13px] text-muted">Add the cash drawer and every bank account you use.</p>
       )}
@@ -156,7 +156,7 @@ function OpeningRow({ label, sub, current, editable, path, allowNegative = true 
     <tr>
       <td className="font-medium">{label}</td>
       <td className="text-muted">{sub}</td>
-      <td>
+      <td data-label="Opening balance (Rs)">
         <NumberInput value={value} disabled={!editable} onChange={setValue} min={allowNegative ? undefined : 0} />
       </td>
       <td className="text-right">
@@ -179,11 +179,11 @@ function PartiesStep({ editable }: { editable: boolean }) {
 
   return (
     <>
-      <p className="mb-3 text-[13px] text-slate-600">
+      <p className="mb-3 text-[13px] text-ink-soft">
         Positive = the party owes you (receivable). Negative = you owe them or hold their advance (payable).
       </p>
       {rows.length > 0 && (
-        <table className="table-dense mb-3 w-full">
+        <Table stack className="mb-3">
           <thead>
             <tr>
               <th>Party</th>
@@ -197,11 +197,11 @@ function PartiesStep({ editable }: { editable: boolean }) {
               <OpeningRow key={p.id} label={p.name} sub={p.kind} current={p.openingBalance} editable={editable} path={`/setup/parties/${p.id}/opening-balance`} />
             ))}
           </tbody>
-        </table>
+        </Table>
       )}
       {editable && (
         <div className="flex items-center gap-2">
-          <div className="w-[320px]">
+          <div className="min-w-0 flex-1 sm:w-[320px] sm:flex-none">
             <PartyPicker value={null} onSelect={(p) => setExtra((x) => [...x, p])} placeholder="Find a party to add a balance" />
           </div>
           <Button size="sm" icon={<Plus className="size-3.5" />} onClick={() => setAdding(true)}>
@@ -240,11 +240,11 @@ function StockStep({ editable, openingDate }: { editable: boolean; openingDate: 
 
   return (
     <>
-      <p className="mb-3 text-[13px] text-slate-600">
+      <p className="mb-3 text-[13px] text-ink-soft">
         Count what is on the shelf and enter it at what it cost you. Each line becomes a batch received on {date(openingDate)}; add several lines for the same product if parts were bought at different costs or expire on different dates.
       </p>
       {opening.length > 0 && (
-        <table className="table-dense mb-3 w-full">
+        <Table className="mb-3">
           <thead>
             <tr>
               <th>Product</th>
@@ -269,7 +269,7 @@ function StockStep({ editable, openingDate }: { editable: boolean; openingDate: 
                 <td className="num">{money(b.originalQuantity * b.unitCost)}</td>
                 <td>
                   {editable && (
-                    <button aria-label="Remove batch" className="rounded p-1 text-muted hover:bg-owe-soft hover:text-owe" onClick={() => remove.mutate(b.id)}>
+                    <button aria-label="Remove batch" className="rounded-md p-1 text-muted hover:bg-owe-soft hover:text-owe" onClick={() => remove.mutate(b.id)}>
                       <Trash2 className="size-3.5" />
                     </button>
                   )}
@@ -277,7 +277,7 @@ function StockStep({ editable, openingDate }: { editable: boolean; openingDate: 
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       )}
       {editable && (
         <div className="grid items-end gap-2 rounded-lg border border-dashed border-rule p-3 md:grid-cols-[1.6fr_100px_120px_130px_150px_auto]">
@@ -349,7 +349,7 @@ function FinishStep({ status, editable }: { status: SetupStatus; editable: boole
           <SummaryRow label="Payable to suppliers" value={status.openingPayable} />
           <SummaryRow label="Stock at cost" value={status.openingStockValue} />
         </dl>
-        <p className="mt-4 text-[13px] text-slate-600">After this, opening balances can't change and documents can be posted from {date(status.company.goLiveDate)} onwards.</p>
+        <p className="mt-4 text-[13px] text-ink-soft">After this, opening balances can't change and documents can be posted from {date(status.company.goLiveDate)} onwards.</p>
       </Modal>
     </Card>
   );

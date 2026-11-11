@@ -6,7 +6,7 @@ import { useAction, useApi, useCategories, useCompany, useExpenseCategories, use
 import { useAuth } from "../lib/auth";
 import { dateTime } from "../lib/format";
 import type { Category, ExpenseCategory, Unit, User, UserRole } from "../lib/types";
-import { Badge, Button, Card, Checkbox, Field, Input, Modal, PageHeader, Select, Spinner, Tabs, Textarea } from "../components/ui";
+import { Badge, Button, Card, Checkbox, Field, Input, Modal, PageHeader, Select, Spinner, Table, Tabs, Textarea } from "../components/ui";
 
 type Tab = "company" | "units" | "categories" | "expenses" | "users" | "password";
 
@@ -121,7 +121,7 @@ function CrudCard<T extends { id: string }>({
       {!items ? (
         <Spinner />
       ) : (
-        <table className="table-dense w-full">
+        <Table>
           <thead>
             <tr>
               {columns.map((c) => (
@@ -143,11 +143,11 @@ function CrudCard<T extends { id: string }>({
                 <td className="text-right">
                   {can("master") && (
                     <div className="flex justify-end gap-0.5">
-                      <button aria-label="Edit" className="rounded p-1 text-muted hover:bg-slate-100 hover:text-ink" onClick={() => onEdit(t)}>
+                      <button aria-label="Edit" className="rounded-md p-1 text-muted hover:bg-wash-strong hover:text-ink" onClick={() => onEdit(t)}>
                         <Pencil className="size-3.5" />
                       </button>
                       {onDelete && (
-                        <button aria-label="Delete" className="rounded p-1 text-muted hover:bg-owe-soft hover:text-owe" onClick={() => onDelete(t)}>
+                        <button aria-label="Delete" className="rounded-md p-1 text-muted hover:bg-owe-soft hover:text-owe" onClick={() => onDelete(t)}>
                           <Trash2 className="size-3.5" />
                         </button>
                       )}
@@ -157,7 +157,7 @@ function CrudCard<T extends { id: string }>({
               </tr>
             ))}
           </tbody>
-        </table>
+        </Table>
       )}
     </Card>
   );
@@ -245,7 +245,7 @@ function CategorySettings() {
         onEdit={setEdit}
         onDelete={(c) => del.mutate(c.id)}
         columns={[
-          { label: "Name", render: (c) => (c.parentId ? <span className="pl-5 text-slate-600">{c.name}</span> : <span className="font-medium">{c.name}</span>) },
+          { label: "Name", render: (c) => (c.parentId ? <span className="pl-5 text-ink-soft">{c.name}</span> : <span className="font-medium">{c.name}</span>) },
           { label: "Parent", render: (c) => c.parentName ?? "" },
           { label: "Products", render: (c) => c.productCount, className: "num" },
         ]}
@@ -291,7 +291,7 @@ function ExpenseSettings() {
         onDelete={(c) => del.mutate(c.id)}
         columns={[
           { label: "Name", render: (c) => <span className="font-medium">{c.name}</span> },
-          { label: "Description", render: (c) => <span className="text-slate-600">{c.description ?? ""}</span> },
+          { label: "Description", render: (c) => <span className="text-ink-soft">{c.description ?? ""}</span> },
           { label: "Status", render: (c) => (c.isActive ? <Badge tone="accent">Active</Badge> : <Badge>Inactive</Badge>) },
         ]}
       />
@@ -356,7 +356,7 @@ function UserSettings() {
         {!data ? (
           <Spinner />
         ) : (
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th>Name</th>
@@ -388,7 +388,7 @@ function UserSettings() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         )}
       </Card>
 

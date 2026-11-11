@@ -6,7 +6,7 @@ import { useAction, useApi } from "../lib/hooks";
 import { useAuth } from "../lib/auth";
 import { date, dateTime, money, qty, today } from "../lib/format";
 import type { Party, Product, PurchaseBill } from "../lib/types";
-import { Button, Card, ErrorNote, Field, Input, NumberInput, PageHeader, Spinner, StatusBadge, VoidDialog } from "../components/ui";
+import { Button, Card, ErrorNote, Field, Input, NumberInput, PageHeader, Spinner, StatusBadge, Table, VoidDialog } from "../components/ui";
 import { AccountSelect, PartyPicker, ProductPicker } from "../components/pickers";
 import {
   ChargesEditor,
@@ -79,7 +79,7 @@ export function NewPurchasePage() {
     <>
       <PageHeader title="New purchase" description="Each line becomes a stock batch at the cost you enter." />
       <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Card>
             <div className="grid gap-3 md:grid-cols-[1.4fr_150px_1fr]">
               <Field label="Supplier">
@@ -95,7 +95,7 @@ export function NewPurchasePage() {
           </Card>
 
           <Card title="Items received" bodyClassName="p-0">
-            <table className="table-dense w-full">
+            <Table stack="wide">
               <thead>
                 <tr>
                   <th>Product</th>
@@ -110,8 +110,9 @@ export function NewPurchasePage() {
               <tbody>
                 {lines.map((l, i) => (
                   <tr key={l.key}>
-                    <td>
+                    <td className="stack-full">
                       <ProductPicker
+                        className="md:min-w-[200px]"
                         value={l.product}
                         autoFocus={i === lines.length - 1 && i > 0}
                         onSelect={(p) => update(l.key, { product: p, quantity: l.quantity || 1 })}
@@ -123,22 +124,22 @@ export function NewPurchasePage() {
                         </div>
                       )}
                     </td>
-                    <td>
+                    <td data-label="Qty">
                       <NumberInput value={l.quantity} onChange={(v) => update(l.key, { quantity: v })} min={0} />
                     </td>
-                    <td>
+                    <td data-label="Unit cost">
                       <NumberInput value={l.unitCost} onChange={(v) => update(l.key, { unitCost: v })} min={0} />
                     </td>
-                    <td>
+                    <td data-label="Batch no.">
                       <Input value={l.batchNumber} onChange={(e) => update(l.key, { batchNumber: e.target.value })} placeholder="Auto" />
                     </td>
-                    <td>
+                    <td data-label="Expiry">
                       <Input type="date" value={l.expiryDate} onChange={(e) => update(l.key, { expiryDate: e.target.value })} required={l.product?.tracksExpiry} />
                     </td>
-                    <td className="num">{money(Number(l.quantity || 0) * Number(l.unitCost || 0))}</td>
-                    <td>
+                    <td className="num" data-label="Amount">{money(Number(l.quantity || 0) * Number(l.unitCost || 0))}</td>
+                    <td className="items-end">
                       {lines.length > 1 && (
-                        <button onClick={() => setLines(lines.filter((x) => x.key !== l.key))} aria-label="Remove line" className="rounded p-1 text-muted hover:bg-owe-soft hover:text-owe">
+                        <button onClick={() => setLines(lines.filter((x) => x.key !== l.key))} aria-label="Remove line" className="rounded-md p-1 text-muted hover:bg-owe-soft hover:text-owe">
                           <Trash2 className="size-3.5" />
                         </button>
                       )}
@@ -146,7 +147,7 @@ export function NewPurchasePage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
             <div className="border-t border-rule px-3 py-2">
               <Button size="sm" variant="ghost" icon={<Plus className="size-3.5" />} onClick={() => setLines([...lines, blankLine()])}>
                 Add line
@@ -252,28 +253,28 @@ export function PurchaseDetailPage() {
         </div>
       )}
       <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
-        <article className="print-area rounded-xl border border-rule bg-surface p-8">
+        <article className="print-area min-w-0 rounded-xl border border-rule bg-surface p-4 sm:p-8">
           <Letterhead title={voided ? "Purchase bill (VOID)" : "Purchase bill"} number={bill.number} />
-          <div className="mb-6 grid grid-cols-2 gap-6 text-[13px]">
+          <div className="mb-6 grid grid-cols-2 gap-4 text-[13px] sm:gap-6">
             <div>
               <div className="text-muted">Supplier</div>
               <div className="mt-1 font-medium">{bill.partyName}</div>
-              <div className="text-slate-600">{bill.partyCode}</div>
+              <div className="text-ink-soft">{bill.partyCode}</div>
             </div>
             <dl className="space-y-1 justify-self-end text-right">
               <div>
                 <dt className="inline text-muted">Received </dt>
-                <dd className="inline font-medium">{date(bill.date)}</dd>
+                <dd className="inline whitespace-nowrap font-medium">{date(bill.date)}</dd>
               </div>
               {bill.supplierReference && (
                 <div>
                   <dt className="inline text-muted">Supplier invoice </dt>
-                  <dd className="inline">{bill.supplierReference}</dd>
+                  <dd className="inline whitespace-nowrap">{bill.supplierReference}</dd>
                 </div>
               )}
             </dl>
           </div>
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th>Item</th>
@@ -306,9 +307,9 @@ export function PurchaseDetailPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
           <div className="mt-4 flex justify-end">
-            <dl className="w-64 space-y-1.5 text-[13px]">
+            <dl className="w-full space-y-1.5 text-[13px] sm:w-64">
               <Row label="Goods">{money(bill.subtotal)}</Row>
               {bill.chargesOnParty > 0 && <Row label="Supplier charges">{money(bill.chargesOnParty)}</Row>}
               <Row label="Total">
@@ -317,7 +318,7 @@ export function PurchaseDetailPage() {
               <Row label="Paid at posting">{money(paid)}</Row>
             </dl>
           </div>
-          {bill.notes && <p className="mt-6 text-[12.5px] text-slate-600">{bill.notes}</p>}
+          {bill.notes && <p className="mt-6 text-[12.5px] text-ink-soft">{bill.notes}</p>}
           <InvoiceFooter />
         </article>
 

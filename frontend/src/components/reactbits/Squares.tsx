@@ -10,6 +10,8 @@ interface SquaresProps {
   borderColor?: string;
   squareSize?: number;
   hoverFillColor?: string;
+  /** Page colour the grid fades into at the edges, as "r,g,b". */
+  fadeRgb?: string;
   className?: string;
 }
 
@@ -19,6 +21,7 @@ export default function Squares({
   borderColor = "rgba(15,118,110,0.12)",
   squareSize = 36,
   hoverFillColor = "rgba(15,118,110,0.08)",
+  fadeRgb = "248,250,252",
   className = "",
 }: SquaresProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -62,8 +65,8 @@ export default function Squares({
       }
       // Fade the grid into the page towards the edges.
       const g = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, Math.hypot(w, h) / 2);
-      g.addColorStop(0, "rgba(248,250,252,0)");
-      g.addColorStop(1, "rgba(248,250,252,1)");
+      g.addColorStop(0, `rgba(${fadeRgb},0)`);
+      g.addColorStop(1, `rgba(${fadeRgb},1)`);
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, w, h);
     };
@@ -108,7 +111,7 @@ export default function Squares({
       canvas.removeEventListener("mousemove", onMove);
       canvas.removeEventListener("mouseleave", onLeave);
     };
-  }, [direction, speed, borderColor, squareSize, hoverFillColor]);
+  }, [direction, speed, borderColor, squareSize, hoverFillColor, fadeRgb]);
 
   return <canvas ref={canvasRef} className={`block h-full w-full ${className}`} aria-hidden />;
 }

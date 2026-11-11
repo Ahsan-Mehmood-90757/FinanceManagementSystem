@@ -6,7 +6,7 @@ import { useAction, useApi } from "../lib/hooks";
 import { useAuth } from "../lib/auth";
 import { cx, date, dateTime, money, qty, today } from "../lib/format";
 import type { Batch, FifoPreview, Paged, Party, Product, SaleBill } from "../lib/types";
-import { Badge, Button, Card, Checkbox, ErrorNote, Field, Input, Modal, NumberInput, PageHeader, Spinner, StatusBadge, VoidDialog } from "../components/ui";
+import { Badge, Button, Card, Checkbox, ErrorNote, Field, Input, Modal, NumberInput, PageHeader, Spinner, StatusBadge, Table, VoidDialog } from "../components/ui";
 import { AccountSelect, PartyPicker, ProductPicker } from "../components/pickers";
 import {
   ChargesEditor,
@@ -86,7 +86,7 @@ export function NewSalePage() {
     <>
       <PageHeader title="New sale" description="Stock is taken from the oldest batches first unless you pick batches yourself." />
       <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Card>
             <div className="grid gap-3 md:grid-cols-[1.4fr_150px_1fr]">
               <Field label="Customer">
@@ -116,7 +116,7 @@ export function NewSalePage() {
           </Card>
 
           <Card title="Items" bodyClassName="p-0" actions={<span className="text-[12px] text-muted">{lines.length} line{lines.length > 1 ? "s" : ""}</span>}>
-            <table className="table-dense w-full">
+            <Table stack>
               <thead>
                 <tr>
                   <th>Product</th>
@@ -141,7 +141,7 @@ export function NewSalePage() {
                   />
                 ))}
               </tbody>
-            </table>
+            </Table>
             <div className="border-t border-rule px-3 py-2">
               <Button size="sm" variant="ghost" icon={<Plus className="size-3.5" />} onClick={() => setLines([...lines, blankLine()])}>
                 Add line
@@ -237,8 +237,9 @@ function SaleLineRow({
 
   return (
     <tr>
-      <td>
+      <td className="stack-full">
         <ProductPicker
+          className="md:min-w-[200px]"
           value={line.product}
           autoFocus={autoFocus}
           onSelect={(p) => onChange({ product: p, unitPrice: p.defaultSalePrice, picks: null, quantity: line.quantity || 1 })}
@@ -252,27 +253,27 @@ function SaleLineRow({
           </div>
         )}
       </td>
-      <td>
+      <td data-label="Qty">
         <NumberInput value={line.quantity} onChange={(v) => onChange({ quantity: v, picks: null })} min={0} />
       </td>
-      <td>
+      <td data-label="Unit price">
         <NumberInput value={line.unitPrice} onChange={(v) => onChange({ unitPrice: v })} min={0} />
       </td>
-      <td className="num">{money(q * Number(line.unitPrice || 0))}</td>
-      <td className="num text-muted">{line.picks ? "manual" : money(cost ?? 0)}</td>
-      <td>
+      <td className="num" data-label="Amount">{money(q * Number(line.unitPrice || 0))}</td>
+      <td className="num text-muted" data-label="FIFO cost">{line.picks ? "manual" : money(cost ?? 0)}</td>
+      <td className="stack-full">
         <div className="flex justify-end gap-0.5">
           <button
             disabled={!line.product}
             title="Choose batches (e.g. sell stock close to expiry first)"
             aria-label="Choose batches"
             onClick={onPickBatches}
-            className="rounded p-1 text-muted hover:bg-slate-100 hover:text-ink disabled:opacity-40"
+            className="rounded-md p-1 text-muted hover:bg-wash-strong hover:text-ink disabled:opacity-40"
           >
             <Layers className="size-3.5" />
           </button>
           {onRemove && (
-            <button onClick={onRemove} aria-label="Remove line" className="rounded p-1 text-muted hover:bg-owe-soft hover:text-owe">
+            <button onClick={onRemove} aria-label="Remove line" className="rounded-md p-1 text-muted hover:bg-owe-soft hover:text-owe">
               <Trash2 className="size-3.5" />
             </button>
           )}
@@ -329,10 +330,10 @@ function BatchPicker({
         </>
       }
     >
-      <p className="mb-3 text-[13px] text-slate-600">
+      <p className="mb-3 text-[13px] text-ink-soft">
         Batches are listed by expiry. Expired batches and stock received after {date(billDate)} cannot be sold.
       </p>
-      <table className="table-dense w-full">
+      <Table stack>
         <thead>
           <tr>
             <th>Batch</th>
@@ -346,12 +347,12 @@ function BatchPicker({
         <tbody>
           {batches.map((b) => (
             <tr key={b.id}>
-              <td className="font-medium">{b.batchNumber}</td>
-              <td>{date(b.receivedOn)}</td>
-              <td>{b.expiryDate ? date(b.expiryDate) : "—"}</td>
-              <td className="num">{money(b.unitCost)}</td>
-              <td className="num">{qty(b.remainingQuantity)}</td>
-              <td>
+              <td className="font-medium" data-label="Batch">{b.batchNumber}</td>
+              <td data-label="Received">{date(b.receivedOn)}</td>
+              <td data-label="Expiry">{b.expiryDate ? date(b.expiryDate) : "—"}</td>
+              <td className="num" data-label="Cost">{money(b.unitCost)}</td>
+              <td className="num" data-label="Available">{qty(b.remainingQuantity)}</td>
+              <td data-label="Take">
                 <NumberInput
                   value={values[b.id] ?? ""}
                   min={0}
@@ -363,13 +364,13 @@ function BatchPicker({
           ))}
           {batches.length === 0 && (
             <tr>
-              <td colSpan={6} className="py-6 text-center text-muted">
+              <td colSpan={6} className="stack-full py-6 text-center text-muted">
                 No sellable batches for this product.
               </td>
             </tr>
           )}
         </tbody>
-      </table>
+      </Table>
     </Modal>
   );
 }
@@ -427,33 +428,33 @@ export function SaleDetailPage() {
       )}
 
       <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
-        <article className="print-area rounded-xl border border-rule bg-surface p-8">
+        <article className="print-area min-w-0 rounded-xl border border-rule bg-surface p-4 sm:p-8">
           <Letterhead title={voided ? "Sales invoice (VOID)" : "Sales invoice"} number={bill.number} />
-          <div className="mb-6 grid grid-cols-2 gap-6 text-[13px]">
+          <div className="mb-6 grid grid-cols-2 gap-4 text-[13px] sm:gap-6">
             <div>
               <div className="text-muted">Bill to</div>
               <div className="mt-1 font-medium">{bill.partyName}</div>
-              <div className="whitespace-pre-line text-slate-600">{[bill.partyAddress, bill.partyPhone].filter(Boolean).join("\n")}</div>
+              <div className="whitespace-pre-line text-ink-soft">{[bill.partyAddress, bill.partyPhone].filter(Boolean).join("\n")}</div>
             </div>
             <dl className="space-y-1 justify-self-end text-right">
               <div>
                 <dt className="inline text-muted">Date </dt>
-                <dd className="inline font-medium">{date(bill.date)}</dd>
+                <dd className="inline whitespace-nowrap font-medium">{date(bill.date)}</dd>
               </div>
               {bill.customerReference && (
                 <div>
                   <dt className="inline text-muted">Your ref. </dt>
-                  <dd className="inline">{bill.customerReference}</dd>
+                  <dd className="inline whitespace-nowrap">{bill.customerReference}</dd>
                 </div>
               )}
               <div>
                 <dt className="inline text-muted">Customer code </dt>
-                <dd className="inline">{bill.partyCode}</dd>
+                <dd className="inline whitespace-nowrap">{bill.partyCode}</dd>
               </div>
             </dl>
           </div>
 
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th className="w-8">#</th>
@@ -490,10 +491,10 @@ export function SaleDetailPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
 
           <div className="mt-4 flex justify-end">
-            <dl className="w-64 space-y-1.5 text-[13px]">
+            <dl className="w-full space-y-1.5 text-[13px] sm:w-64">
               <Row label="Total">
                 <span className="text-[15px] font-semibold tabular-nums">Rs {money(bill.total)}</span>
               </Row>
@@ -505,7 +506,7 @@ export function SaleDetailPage() {
               </Row>
             </dl>
           </div>
-          {bill.notes && <p className="mt-6 text-[12.5px] text-slate-600">{bill.notes}</p>}
+          {bill.notes && <p className="mt-6 text-[12.5px] text-ink-soft">{bill.notes}</p>}
           <InvoiceFooter />
         </article>
 

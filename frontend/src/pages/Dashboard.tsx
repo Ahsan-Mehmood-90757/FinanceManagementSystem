@@ -5,7 +5,7 @@ import { useApi } from "../lib/hooks";
 import { useAuth } from "../lib/auth";
 import type { Dashboard } from "../lib/types";
 import { cx, date, money, qty, rs, rsCompact } from "../lib/format";
-import { Button, Card, ErrorNote, PageHeader, Spinner, StatusBadge } from "../components/ui";
+import { Button, Card, ErrorNote, PageHeader, Spinner, StatusBadge, Table } from "../components/ui";
 import CountUp from "../components/reactbits/CountUp";
 import SpotlightCard from "../components/reactbits/SpotlightCard";
 
@@ -50,7 +50,7 @@ export default function DashboardPage() {
           <ul className="mt-5 grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
             {data.accounts.map((a) => (
               <li key={a.id} className="flex items-center justify-between border-b border-dashed border-rule py-1 text-[13px]">
-                <Link to={`/accounts/${a.id}`} className="truncate text-slate-600 hover:text-accent-strong">
+                <Link to={`/accounts/${a.id}`} className="truncate text-ink-soft hover:text-accent-strong">
                   {a.name}
                 </Link>
                 <span className={cx("tabular-nums", a.balance < 0 && "text-owe")}>{money(a.balance)}</span>
@@ -93,7 +93,7 @@ export default function DashboardPage() {
           {data.topProducts.length === 0 ? (
             <p className="p-4 text-[13px] text-muted">No sales this month yet.</p>
           ) : (
-            <table className="table-dense w-full">
+            <Table>
               <thead>
                 <tr>
                   <th>Product</th>
@@ -114,7 +114,7 @@ export default function DashboardPage() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </Table>
           )}
         </Card>
       </div>
@@ -123,7 +123,7 @@ export default function DashboardPage() {
         {data.recent.length === 0 ? (
           <p className="p-4 text-[13px] text-muted">Nothing posted yet. Your first sale or purchase will appear here.</p>
         ) : (
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th>Document</th>
@@ -145,7 +145,7 @@ export default function DashboardPage() {
                     </Link>
                   </td>
                   <td>{date(d.date)}</td>
-                  <td className="text-slate-600">{d.counterparty ?? "—"}</td>
+                  <td className="text-ink-soft">{d.counterparty ?? "—"}</td>
                   <td>
                     <StatusBadge status={d.status} />
                   </td>
@@ -153,7 +153,7 @@ export default function DashboardPage() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </Table>
         )}
       </Card>
     </>
@@ -176,7 +176,7 @@ function Legend() {
   return (
     <div className="flex items-center gap-3 text-[12px] text-muted">
       <span className="inline-flex items-center gap-1.5">
-        <span className="size-2 rounded-sm bg-slate-300" /> Net sales
+        <span className="size-2 rounded-sm bg-rule-strong" /> Net sales
       </span>
       <span className="inline-flex items-center gap-1.5">
         <span className="size-2 rounded-sm bg-accent" /> Gross profit
@@ -203,8 +203,8 @@ function TrendChart({ points }: { points: Dashboard["trend"] }) {
       <svg viewBox={`0 0 ${W} ${H}`} className="h-[200px] w-full" onMouseLeave={() => setHover(null)} role="img" aria-label="Daily net sales and gross profit for the last 30 days">
         {ticks.map((t) => (
           <g key={t}>
-            <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke="#e2e8f0" strokeDasharray={t === 0 ? undefined : "3 3"} />
-            <text x={pad.l - 6} y={y(t) + 3} textAnchor="end" fontSize="10" fill="#94a3b8">
+            <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} className="stroke-rule" strokeDasharray={t === 0 ? undefined : "3 3"} />
+            <text x={pad.l - 6} y={y(t) + 3} textAnchor="end" fontSize="10" className="fill-faint">
               {t === 0 ? "0" : rsCompact(t).replace("Rs ", "")}
             </text>
           </g>
@@ -213,11 +213,11 @@ function TrendChart({ points }: { points: Dashboard["trend"] }) {
           const x = pad.l + i * bw;
           return (
             <g key={p.date} onMouseEnter={() => setHover(i)}>
-              <rect x={x} y={pad.t} width={bw} height={H - pad.t - pad.b} fill={hover === i ? "#f1f5f9" : "transparent"} />
-              <rect x={x + bw * 0.18} y={y(Math.max(p.sales, 0))} width={bw * 0.64} height={Math.max(0, y(0) - y(Math.max(p.sales, 0)))} rx={2} fill="#cbd5e1" />
-              <rect x={x + bw * 0.34} y={y(Math.max(p.grossProfit, 0))} width={bw * 0.32} height={Math.abs(y(0) - y(p.grossProfit))} rx={1.5} fill={p.grossProfit < 0 ? "#b42318" : "#0f766e"} />
+              <rect x={x} y={pad.t} width={bw} height={H - pad.t - pad.b} className={hover === i ? "fill-wash-strong" : "fill-transparent"} />
+              <rect x={x + bw * 0.18} y={y(Math.max(p.sales, 0))} width={bw * 0.64} height={Math.max(0, y(0) - y(Math.max(p.sales, 0)))} rx={2} className="fill-rule-strong" />
+              <rect x={x + bw * 0.34} y={y(Math.max(p.grossProfit, 0))} width={bw * 0.32} height={Math.abs(y(0) - y(p.grossProfit))} rx={1.5} className={p.grossProfit < 0 ? "fill-owe" : "fill-accent"} />
               {(i % 7 === 0 || i === points.length - 1) && (
-                <text x={x + bw / 2} y={H - 6} textAnchor="middle" fontSize="10" fill="#94a3b8">
+                <text x={x + bw / 2} y={H - 6} textAnchor="middle" fontSize="10" className="fill-faint">
                   {date(p.date).slice(0, 6)}
                 </text>
               )}
@@ -228,7 +228,7 @@ function TrendChart({ points }: { points: Dashboard["trend"] }) {
       {h && (
         <div className="pointer-events-none absolute right-2 top-0 rounded-md border border-rule bg-surface px-2.5 py-1.5 text-[12px]">
           <div className="font-medium">{date(h.date)}</div>
-          <div className="tabular-nums text-slate-600">Sales {money(h.sales)}</div>
+          <div className="tabular-nums text-ink-soft">Sales {money(h.sales)}</div>
           <div className="tabular-nums text-accent-strong">Profit {money(h.grossProfit)}</div>
         </div>
       )}

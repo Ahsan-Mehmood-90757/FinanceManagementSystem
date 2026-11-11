@@ -10,7 +10,7 @@ interface SpotlightCardProps {
 export default function SpotlightCard({
   children,
   className = "",
-  spotlightColor = "rgba(15, 118, 110, 0.10)",
+  spotlightColor = "color-mix(in srgb, var(--color-accent) 12%, transparent)",
 }: SpotlightCardProps) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -27,7 +27,7 @@ export default function SpotlightCard({
     <div
       ref={ref}
       onMouseMove={onMove}
-      className={`group relative overflow-hidden rounded-xl border border-rule bg-surface ${className}`}
+      className={`group relative min-w-0 overflow-hidden rounded-xl border border-rule bg-surface ${className}`}
     >
       <div
         aria-hidden

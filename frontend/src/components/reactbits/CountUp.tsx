@@ -1,22 +1,22 @@
-// Adapted from React Bits "CountUp" (https://reactbits.dev, MIT). Spring-animated number that counts to `to`.
+// Adapted from React Bits "CountUp" (https://reactbits.dev, MIT). Counts to `to` once it scrolls into view.
+// Uses a fixed-length eased tween rather than a spring: a spring's settle time grows with the size of the number,
+// so large amounts would crawl through the last few digits for many seconds.
 import { useEffect, useRef } from "react";
-import { useInView, useMotionValue, useSpring } from "motion/react";
+import { animate, useInView } from "motion/react";
 
 interface CountUpProps {
   to: number;
   from?: number;
+  /** Seconds. */
   duration?: number;
   decimals?: number;
   className?: string;
   formatter?: (n: number) => string;
 }
 
-export default function CountUp({ to, from = 0, duration = 1.2, decimals = 0, className, formatter }: CountUpProps) {
+export default function CountUp({ to, from = 0, duration = 1, decimals = 0, className, formatter }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const value = useMotionValue(from);
-  const damping = 20 + 40 * (1 / duration);
-  const stiffness = 100 * (1 / duration);
-  const spring = useSpring(value, { damping, stiffness });
+  const shown = useRef(from);
   const inView = useInView(ref, { once: true, margin: "0px" });
 
   const format = (n: number) =>
@@ -25,22 +25,24 @@ export default function CountUp({ to, from = 0, duration = 1.2, decimals = 0, cl
       : n.toLocaleString("en-PK", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
   useEffect(() => {
-    if (ref.current) ref.current.textContent = format(from);
+    const el = ref.current;
+    if (!el) return;
+    if (!inView) {
+      el.textContent = format(shown.current);
+      return;
+    }
+    // Animate from whatever is on screen, so a refetch glides to the new value instead of restarting at zero.
+    const controls = animate(shown.current, to, {
+      duration,
+      ease: [0.16, 1, 0.3, 1], // easeOutExpo: fast start, gentle landing
+      onUpdate: (n) => {
+        shown.current = n;
+        el.textContent = format(n);
+      },
+    });
+    return () => controls.stop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [from]);
-
-  useEffect(() => {
-    if (inView) value.set(to);
-  }, [inView, to, value]);
-
-  useEffect(
-    () =>
-      spring.on("change", (latest) => {
-        if (ref.current) ref.current.textContent = format(latest);
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [spring, decimals, formatter],
-  );
+  }, [inView, to, duration, decimals, formatter]);
 
   return <span ref={ref} className={className} />;
 }

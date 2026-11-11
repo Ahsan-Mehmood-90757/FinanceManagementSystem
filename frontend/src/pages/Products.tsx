@@ -22,6 +22,7 @@ import {
   SearchInput,
   Select,
   Spinner,
+  Table,
   Textarea,
 } from "../components/ui";
 
@@ -59,7 +60,7 @@ export function ProductsPage() {
       />
       <div className="mb-3 flex flex-wrap items-center gap-3">
         <SearchInput value={search} onChange={setSearch} placeholder="Name or SKU" />
-        <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-[220px]" aria-label="Category">
+        <Select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full sm:w-[220px]" aria-label="Category">
           <option value="">All categories</option>
           {categories.data?.map((c) => (
             <option key={c.id} value={c.id}>
@@ -75,7 +76,7 @@ export function ProductsPage() {
         {isLoading ? (
           <Spinner />
         ) : data && data.items.length ? (
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th className="w-[120px]">SKU</th>
@@ -96,7 +97,7 @@ export function ProductsPage() {
                     <td className="font-medium">
                       {p.name} {!p.isActive && <Badge>Inactive</Badge>}
                     </td>
-                    <td className="text-slate-600">{p.categoryName ?? ""}</td>
+                    <td className="text-ink-soft">{p.categoryName ?? ""}</td>
                     <td className="num">{money(p.defaultSalePrice)}</td>
                     <td className={cx("num", low && "font-medium text-warn")}>
                       {qty(p.stockOnHand)} {p.unitSymbol}
@@ -106,7 +107,7 @@ export function ProductsPage() {
                       {can("master") && (
                         <button
                           aria-label={`Edit ${p.name}`}
-                          className="rounded p-1 text-muted hover:bg-slate-100 hover:text-ink"
+                          className="rounded-md p-1 text-muted hover:bg-wash-strong hover:text-ink"
                           onClick={(e) => {
                             e.stopPropagation();
                             setEditing(p);
@@ -120,7 +121,7 @@ export function ProductsPage() {
                 );
               })}
             </tbody>
-          </table>
+          </Table>
         ) : (
           <EmptyState title={lowStock ? "Nothing is below its reorder level" : "No products yet"} action={!lowStock && can("master") && <Button onClick={() => setEditing("new")}>Add product</Button>}>
             {lowStock ? "Products with a reorder level appear here when stock falls to it." : "Add products, then receive stock with a purchase or as Day-0 opening stock."}
@@ -283,7 +284,7 @@ export function ProductDetailPage() {
         actions={<Checkbox label="Show depleted" checked={showDepleted} onChange={setShowDepleted} />}
       >
         {batches.data && batches.data.items.length ? (
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th>Batch</th>
@@ -314,7 +315,7 @@ export function ProductDetailPage() {
                   </tr>
                 ))}
             </tbody>
-          </table>
+          </Table>
         ) : (
           <p className="p-4 text-[13px] text-muted">No stock. Receive it with a purchase bill.</p>
         )}
@@ -323,7 +324,7 @@ export function ProductDetailPage() {
       <Card title="Stock card" bodyClassName="p-0">
         {movements.data && movements.data.items.length ? (
           <>
-            <table className="table-dense w-full">
+            <Table>
               <thead>
                 <tr>
                   <th>Date</th>
@@ -360,7 +361,7 @@ export function ProductDetailPage() {
                   );
                 })}
               </tbody>
-            </table>
+            </Table>
             <Pagination page={movements.data.page} pageSize={movements.data.pageSize} total={movements.data.total} onPage={setPage} />
           </>
         ) : (

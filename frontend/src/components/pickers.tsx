@@ -8,10 +8,12 @@ export function ProductPicker({
   value,
   onSelect,
   autoFocus,
+  className,
 }: {
   value?: { name: string; sku: string } | null;
   onSelect: (p: Product) => void;
   autoFocus?: boolean;
+  className?: string;
 }) {
   const [search, setSearch] = useState("");
   const debounced = useDebounced(search);
@@ -27,6 +29,7 @@ export function ProductPicker({
       onSelect={onSelect}
       placeholder="Product name or SKU"
       autoFocus={autoFocus}
+      className={className}
       renderItem={(p) => (
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -34,7 +37,7 @@ export function ProductPicker({
             <div className="text-[11.5px] text-muted">{p.sku}</div>
           </div>
           <div className="text-right text-[12px] tabular-nums">
-            <div className={p.stockOnHand <= 0 ? "text-owe" : "text-slate-600"}>
+            <div className={p.stockOnHand <= 0 ? "text-owe" : "text-ink-soft"}>
               {qty(p.stockOnHand)} {p.unitSymbol}
             </div>
             <div className="text-muted">Rs {money(p.defaultSalePrice)}</div>

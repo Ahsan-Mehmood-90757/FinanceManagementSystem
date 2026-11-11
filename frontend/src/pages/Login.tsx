@@ -1,13 +1,21 @@
 import { useState, type FormEvent } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { useAuth } from "../lib/auth";
-import { Button, ErrorNote, Field, Input } from "../components/ui";
+import { useTheme } from "../lib/theme";
+import { Button, ErrorNote, Field, Input, ThemeToggle } from "../components/ui";
 import Squares from "../components/reactbits/Squares";
 import BlurText from "../components/reactbits/BlurText";
 import ShinyText from "../components/reactbits/ShinyText";
 
+// The sign-in grid is drawn on a canvas, so it takes real colours rather than CSS tokens.
+const GRID = {
+  light: { borderColor: "rgba(15,118,110,0.12)", hoverFillColor: "rgba(15,118,110,0.08)", fadeRgb: "248,250,252" },
+  dark: { borderColor: "rgba(63,184,165,0.10)", hoverFillColor: "rgba(63,184,165,0.08)", fadeRgb: "17,18,19" },
+};
+
 export default function LoginPage() {
   const { user, login } = useAuth();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [username, setUsername] = useState("");
@@ -36,7 +44,7 @@ export default function LoginPage() {
     <div className="grid min-h-screen lg:grid-cols-[1.15fr_1fr]">
       <section className="relative hidden overflow-hidden border-r border-rule bg-paper lg:block">
         <div className="absolute inset-0">
-          <Squares direction="diagonal" speed={0.18} squareSize={34} />
+          <Squares direction="diagonal" speed={0.18} squareSize={34} {...GRID[theme]} />
         </div>
         <div className="relative flex h-full flex-col justify-between p-12">
           <div className="flex items-center gap-2.5">
@@ -48,7 +56,7 @@ export default function LoginPage() {
               text="Stock, cash and every party balance in one ledger."
               className="text-[40px] font-semibold leading-[1.1] tracking-[-0.02em] text-ink"
             />
-            <p className="mt-5 max-w-[26rem] text-[15px] leading-6 text-slate-600">
+            <p className="mt-5 max-w-[26rem] text-[15px] leading-6 text-ink-soft">
               Purchases build FIFO batches, sales draw from the oldest stock first, and every rupee that moves
               leaves a ledger line behind it.
             </p>
@@ -70,8 +78,14 @@ export default function LoginPage() {
         </div>
       </section>
 
-      <section className="flex items-center justify-center bg-surface px-6 py-12">
+      <section className="relative flex flex-col items-center justify-center bg-surface px-6 py-12">
+        <ThemeToggle className="absolute right-4 top-4" />
         <form onSubmit={submit} className="w-full max-w-[340px] space-y-4">
+          {/* The brand panel is hidden below `lg`, so phones get a compact mark above the form instead. */}
+          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
+            <img src="/favicon.svg" alt="" className="size-8" />
+            <span className="text-[14px] font-semibold">Financial Management System</span>
+          </div>
           <div className="mb-6">
             <h1 className="text-[22px] font-semibold tracking-[-0.01em]">
               Sign in to <ShinyText text="your books" speed={5} />

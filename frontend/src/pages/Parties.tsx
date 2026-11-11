@@ -11,6 +11,7 @@ import {
   Button,
   Card,
   Checkbox,
+  DateRange,
   EmptyState,
   ErrorNote,
   Field,
@@ -21,6 +22,7 @@ import {
   SearchInput,
   Select,
   Spinner,
+  Table,
   Tabs,
   Textarea,
 } from "../components/ui";
@@ -72,7 +74,7 @@ export function PartiesPage() {
           ]}
         />
         <SearchInput value={search} onChange={setSearch} placeholder="Name, code or phone" />
-        <Select value={bal} onChange={(e) => setBal(e.target.value as BalFilter)} className="w-[170px]" aria-label="Balance filter">
+        <Select value={bal} onChange={(e) => setBal(e.target.value as BalFilter)} className="w-full sm:w-[170px]" aria-label="Balance filter">
           <option value="Any">Any balance</option>
           <option value="Receivable">They owe us</option>
           <option value="Payable">We owe them</option>
@@ -85,7 +87,7 @@ export function PartiesPage() {
         {isLoading ? (
           <Spinner />
         ) : data && data.items.length ? (
-          <table className="table-dense w-full">
+          <Table>
             <thead>
               <tr>
                 <th className="w-[100px]">Code</th>
@@ -106,7 +108,7 @@ export function PartiesPage() {
                       {p.name} {!p.isActive && <Badge>Inactive</Badge>}
                     </td>
                     <td>{p.kind === "Both" ? "Customer & supplier" : p.kind}</td>
-                    <td className="text-slate-600">{p.phone ?? ""}</td>
+                    <td className="text-ink-soft">{p.phone ?? ""}</td>
                     <td className={cx("num", b.tone === "owe" && "text-owe", b.tone === "accent" && "text-accent-strong", b.tone === "muted" && "text-muted")}>
                       {b.text}
                     </td>
@@ -114,7 +116,7 @@ export function PartiesPage() {
                       {can("master") && !p.isSystem && (
                         <button
                           aria-label={`Edit ${p.name}`}
-                          className="rounded p-1 text-muted hover:bg-slate-100 hover:text-ink"
+                          className="rounded-md p-1 text-muted hover:bg-wash-strong hover:text-ink"
                           onClick={(e) => {
                             e.stopPropagation();
                             setEditing(p);
@@ -128,7 +130,7 @@ export function PartiesPage() {
                 );
               })}
             </tbody>
-          </table>
+          </Table>
         ) : (
           <EmptyState title="No parties match" action={can("master") && <Button onClick={() => setEditing("new")}>Add party</Button>}>
             Customers and suppliers share one list. A party can be both.
@@ -281,10 +283,8 @@ export function PartyStatementPage() {
           <div className="mt-0.5 text-[15px] font-medium">{p.kind === "Both" ? "Customer & supplier" : p.kind}</div>
         </div>
       </div>
-      <div className="no-print mb-3 flex items-center gap-2">
-        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-[150px]" aria-label="From" />
-        <span className="text-muted">to</span>
-        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-[150px]" aria-label="To" />
+      <div className="no-print mb-3 flex flex-wrap items-center gap-2">
+        <DateRange from={from} to={to} onFrom={setFrom} onTo={setTo} />
         <Button size="sm" variant="ghost" onClick={() => setFrom("")}>
           From the start
         </Button>

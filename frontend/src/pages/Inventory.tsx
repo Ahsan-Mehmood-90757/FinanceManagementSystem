@@ -5,7 +5,7 @@ import { useAction, useApi, useDebounced } from "../lib/hooks";
 import { useAuth } from "../lib/auth";
 import { cx, date, money, qty, today } from "../lib/format";
 import type { Batch, Paged, StockAdjustment } from "../lib/types";
-import { Button, Checkbox, EmptyState, ErrorNote, Field, Input, Modal, NumberInput, PageHeader, Pagination, SearchInput, Select, Spinner, Tabs } from "../components/ui";
+import { Button, Checkbox, EmptyState, ErrorNote, Field, Input, Modal, NumberInput, PageHeader, Pagination, SearchInput, Select, Spinner, Table, Tabs } from "../components/ui";
 import { ExpiryCell } from "./Products";
 
 type Tab = "batches" | "writeoffs";
@@ -44,7 +44,7 @@ export default function InventoryPage() {
         <SearchInput value={search} onChange={setSearch} placeholder={tab === "batches" ? "Product, SKU or batch" : "Number or product"} />
         {tab === "batches" && (
           <>
-            <Select value={expiring ?? ""} onChange={(e) => setParams(e.target.value ? { expiring: e.target.value } : {})} className="w-[200px]" aria-label="Expiry filter">
+            <Select value={expiring ?? ""} onChange={(e) => setParams(e.target.value ? { expiring: e.target.value } : {})} className="w-full sm:w-[200px]" aria-label="Expiry filter">
               <option value="">Any expiry</option>
               <option value="0">Already expired</option>
               <option value="30">Expiring within 30 days</option>
@@ -62,7 +62,7 @@ export default function InventoryPage() {
             {batches.isLoading ? (
               <Spinner />
             ) : batches.data && batches.data.items.length ? (
-              <table className="table-dense w-full">
+              <Table>
                 <thead>
                   <tr>
                     <th>Product</th>
@@ -104,7 +104,7 @@ export default function InventoryPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </Table>
             ) : (
               <EmptyState title="No batches match">Stock arrives through purchase bills or Day-0 opening stock.</EmptyState>
             )}
@@ -116,7 +116,7 @@ export default function InventoryPage() {
             {adjustments.isLoading ? (
               <Spinner />
             ) : adjustments.data && adjustments.data.items.length ? (
-              <table className="table-dense w-full">
+              <Table>
                 <thead>
                   <tr>
                     <th>Number</th>
@@ -141,7 +141,7 @@ export default function InventoryPage() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </Table>
             ) : (
               <EmptyState title="No write-offs">Expired, damaged or missing stock written off from a batch shows here.</EmptyState>
             )}
@@ -187,7 +187,7 @@ function WriteOffDialog({ batch, onClose }: { batch: Batch | null; onClose: () =
         </>
       }
     >
-      <p className="mb-3 text-[13px] text-slate-600">
+      <p className="mb-3 text-[13px] text-ink-soft">
         Removes stock of <span className="font-medium text-ink">{batch?.productName}</span> at its batch cost. The value is charged to net profit as a loss.
       </p>
       <div className="grid grid-cols-2 gap-3">

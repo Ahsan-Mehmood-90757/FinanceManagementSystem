@@ -6,7 +6,7 @@ import { useAccounts, useAction, useApi } from "../lib/hooks";
 import { useAuth } from "../lib/auth";
 import { cx, money, monthStart, today } from "../lib/format";
 import type { Account, AccountType, Statement } from "../lib/types";
-import { Badge, Button, Card, Checkbox, EmptyState, ErrorNote, Field, Input, Modal, PageHeader, Select, Spinner } from "../components/ui";
+import { Badge, Button, Card, Checkbox, DateRange, EmptyState, ErrorNote, Field, Input, Modal, PageHeader, Select, Spinner } from "../components/ui";
 import { StatementView } from "../components/StatementView";
 import { Letterhead } from "../components/documents";
 import { VoucherForm } from "./Vouchers";
@@ -49,7 +49,7 @@ export function AccountsPage() {
                 <Link to={`/accounts/${a.id}`} className="absolute inset-0 rounded-xl" aria-label={`Open ${a.name} statement`} />
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2.5">
-                    <div className="flex size-8 items-center justify-center rounded-lg bg-slate-100 text-slate-600">
+                    <div className="flex size-8 items-center justify-center rounded-lg bg-wash-strong text-ink-soft">
                       <Icon className="size-4" />
                     </div>
                     <div>
@@ -63,7 +63,7 @@ export function AccountsPage() {
                   </div>
                   {can("master") && (
                     <button
-                      className="relative z-[1] rounded p-1 text-muted opacity-0 hover:bg-slate-100 hover:text-ink group-hover:opacity-100 focus:opacity-100"
+                      className="relative z-[1] rounded-md p-1 text-muted opacity-0 hover:bg-wash-strong hover:text-ink group-hover:opacity-100 focus:opacity-100 pointer-coarse:opacity-100"
                       onClick={() => setEditing(a)}
                       aria-label={`Edit ${a.name}`}
                     >
@@ -186,10 +186,8 @@ export function AccountStatementPage() {
           </Button>
         }
       />
-      <div className="no-print mb-3 flex items-center gap-2">
-        <Input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-[150px]" aria-label="From" />
-        <span className="text-muted">to</span>
-        <Input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-[150px]" aria-label="To" />
+      <div className="no-print mb-3 flex flex-wrap items-center gap-2">
+        <DateRange from={from} to={to} onFrom={setFrom} onTo={setTo} />
         <Button size="sm" variant="ghost" onClick={() => setFrom("")}>
           From the start
         </Button>
